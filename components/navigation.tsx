@@ -9,6 +9,7 @@ import CartButton from "./cart-button"
 
 export default function Navigation() {
   const [isOpen, setIsOpen] = useState(false)
+  const isAdmin = typeof window !== "undefined" && document.cookie.includes("admin=true")
 
   const links = [
     { href: "/configurator", label: "Конфигуратор" },
@@ -40,9 +41,11 @@ export default function Navigation() {
 
           <div className="hidden md:flex items-center gap-4">
             <CartButton />
-            <Button asChild variant="ghost" size="sm">
-              <Link href="/admin">Админ</Link>
-            </Button>
+            {isAdmin && (
+              <Button asChild variant="ghost" size="sm">
+                <Link href="/admin">Админ</Link>
+              </Button>
+            )}
             <Button asChild size="sm">
               <Link href="/configurator">Собрать ПК</Link>
             </Button>
@@ -69,9 +72,11 @@ export default function Navigation() {
               <Button asChild variant="ghost" size="sm">
                 <Link href="/cart">Корзина</Link>
               </Button>
-              <Button asChild variant="ghost" size="sm">
-                <Link href="/admin">Админ панель</Link>
-              </Button>
+              {isAdmin && (
+                <Button asChild variant="ghost" size="sm">
+                  <Link href="/admin">Админ панель</Link>
+                </Button>
+              )}
               <Button asChild size="sm">
                 <Link href="/configurator">Собрать ПК</Link>
               </Button>

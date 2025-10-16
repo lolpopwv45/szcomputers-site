@@ -31,69 +31,30 @@ export default function CheckoutPage() {
     setIsSubmitting(true)
 
     try {
-      // Prepare order details
-      const orderDetails = `
-НОВЫЙ ЗАКАЗ НА САЙТЕ SZ COMPUTERS!
-
-КОНТАКТНЫЕ ДАННЫЕ:
-Имя: ${formData.name}
-Телефон: ${formData.phone}
-Email: ${formData.email || "Не указан"}
-
-ЗАКАЗ:
-${items.map((item) => `${item.name} x ${item.quantity} - ${(item.price * item.quantity).toLocaleString("ru-RU")} ₽`).join("\n")}
-
-ИТОГО: ${getTotalPrice().toLocaleString("ru-RU")} ₽
-
-ДОСТАВКА: ${formData.delivery === "delivery" ? `Доставка по адресу: ${formData.address}` : "Самовывоз из Челябинска"}
-
-СПОСОБ ОПЛАТЫ: ${
-        formData.payment === "card"
-          ? "Картой онлайн"
-          : formData.payment === "cash"
-            ? "Наличными при получении"
-            : formData.payment === "transfer"
-              ? "Переводом на карту"
-              : "Через Авито"
-      }
-      `
-
-      // Create a hidden form and submit it
-      const form = document.createElement("form")
-      form.method = "POST"
-      form.action = "https://formsubmit.co/kazaam2112@gmail.com"
-      form.target = "_blank"
-
-      // Add form fields
-      const fields = {
-        name: formData.name,
-        email: formData.email || "noreply@szcomputers.ru",
-        phone: formData.phone,
-        message: orderDetails,
-        _subject: `Новый заказ от ${formData.name}`,
-        _captcha: "false",
-        _template: "table",
-      }
-
-      Object.entries(fields).forEach(([key, value]) => {
-        const input = document.createElement("input")
-        input.type = "hidden"
-        input.name = key
-        input.value = value
-        form.appendChild(input)
+      // Send order to internal email API
+      const response = await fetch("/api/send-email", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          customerName: formData.name,
+          customerPhone: formData.phone,
+          customerEmail: formData.email,
+          items: items.map((item) => ({ name: item.name, quantity: item.quantity, price: item.price })),
+          totalPrice: getTotalPrice(),
+          delivery: formData.delivery,
+          address: formData.address,
+          payment: formData.payment,
+        }),
       })
 
-      document.body.appendChild(form)
-      form.submit()
-      document.body.removeChild(form)
+      if (!response.ok) {
+        throw new Error("Failed to send order email")
+      }
 
       // Show success message
       setOrderSuccess(true)
       clearCart()
-
-      setTimeout(() => {
-        router.push("/")
-      }, 5000)
+      // No auto-redirect; user will close via button
     } catch (error) {
       console.error("Error submitting order:", error)
       alert("Произошла ошибка при оформлении заказа. Пожалуйста, позвоните нам: 8 992 504-72-98")
@@ -122,7 +83,7 @@ ${items.map((item) => `${item.name} x ${item.quantity} - ${(item.price * item.qu
             <p className="font-semibold mb-2">Ожидайте звонка менеджера</p>
             <p className="text-sm text-muted-foreground">
               Если у вас есть срочные вопросы, звоните: <br />
-              <span className="font-semibold text-foreground">8 992 504-72-98</span>
+              <a href="tel:+79925047298" className="font-semibold text-foreground">8 992 504-72-98</a>
             </p>
             <p className="text-xs text-muted-foreground mt-3">Также вы можете написать нам в Telegram или ВКонтакте</p>
           </div>
